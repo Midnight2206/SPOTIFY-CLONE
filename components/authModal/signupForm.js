@@ -1,6 +1,6 @@
-import { store, subscribe } from "/store/store.js";
-import validateInput from "/utils/validateInput.js";
-import httpRequest from "/utils/HttpRequest.js";
+import { store, subscribe } from "../../store/store.js";
+import validateInput from "../../utils/validateInput.js";
+import httpRequest from "../../utils/HttpRequest.js";
 export class SignupForm extends HTMLElement {
   constructor() {
     super();
@@ -13,7 +13,6 @@ export class SignupForm extends HTMLElement {
     const res = await fetch("/components/authModal/signupForm.html");
     const html = await res.text();
     this.innerHTML = html;
-    this.avatarImg = this.querySelector("#userAvatar img")
     this.classList.add("auth-form");
     this.id = "signupForm";
     this.inputs = this.querySelectorAll(".form-group input");

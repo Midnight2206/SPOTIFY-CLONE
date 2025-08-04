@@ -1,5 +1,5 @@
-import httpRequest from "/utils/HttpRequest.js"
-import { store } from "/store/store.js";
+import httpRequest from "./HttpRequest.js"
+import { store } from "../store/store.js";
 export async function refreshToken() {
   try {
     const refresh_token = localStorage.getItem("refreshToken");

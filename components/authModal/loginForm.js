@@ -1,7 +1,7 @@
-import { store, subscribe } from "/store/store.js";
-import validateInput from "/utils/validateInput.js";
-import httpRequest from "/utils/HttpRequest.js";
-import { getUser } from "/utils/getUser.js";
+import { store, subscribe } from "../../store/store.js";
+import validateInput from "../../utils/validateInput.js";
+import httpRequest from "../../utils/HttpRequest.js";
+import { getUser } from "../../utils/getUser.js";
 export class LoginForm extends HTMLElement {
   constructor() {
     super();
@@ -12,7 +12,7 @@ export class LoginForm extends HTMLElement {
   }
 
   async connectedCallback() {
-    const res = await fetch("/components/authModal/loginForm.html");
+    const res = await fetch("components/authModal/loginForm.html");
     const html = await res.text();
     this.innerHTML = html;
     this.classList.add("auth-form");

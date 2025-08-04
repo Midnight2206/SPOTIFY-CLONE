@@ -1,6 +1,6 @@
 import httpRequest from "./utils/HttpRequest.js";
 import './components/index.js'
-import {getUser} from '/utils/getUser.js'
+import {getUser} from './utils/getUser.js'
 
 // Auth Modal Functionality
 document.addEventListener("DOMContentLoaded", async function () {

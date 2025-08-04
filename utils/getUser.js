@@ -1,6 +1,6 @@
-import { store } from "/store/store.js";
-import httpRequest from "/utils/HttpRequest.js";
-import { refreshToken } from "/utils/refreshToken.js";
+import { store } from "../store/store.js";
+import httpRequest from "./HttpRequest.js";
+import { refreshToken } from "./refreshToken.js";
 export async function getUser(retried = false) {
   try {
     const response = await httpRequest.get("users/me");

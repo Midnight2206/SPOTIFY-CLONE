@@ -4,7 +4,7 @@ export class SideBar extends HTMLElement {
   }
 
   async connectedCallback() {
-    const res = await fetch("/components/sideBar/sideBar.html");
+    const res = await fetch("components/sideBar/sideBar.html");
     const html = await res.text();
     this.innerHTML = html;
     const signupBtn = document.querySelector(".signup-btn");
