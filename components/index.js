@@ -1,0 +1,6 @@
+import './sideBar/sideBar.js'
+import './header/header.js'
+import './footer/footer.js'
+import './authModal/authModal.js'
+import './authModal/loginForm.js'
+import './authModal/signupForm.js'

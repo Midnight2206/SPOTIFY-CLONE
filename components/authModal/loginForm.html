@@ -1,0 +1,43 @@
+<h1 class="modal-heading">Log in to Spotify</h1>
+
+<form class="auth-form-content">
+  <div class="form-group invalid">
+    <input
+      type="email"
+      name="email"
+      placeholder="Email address"
+      class="form-input"
+      id="loginEmail"
+      data-type="email"
+      data-required="true"
+    />
+    <div class="error-message">
+      <i class="fas fa-info-circle"></i>
+      <span>Please enter a valid email address</span>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <input
+      type="password"
+      name="password"
+      placeholder="Password"
+      class="form-input"
+      id="loginPassword"
+      data-type="password"
+      data-required="true"
+      data-minLength="8"
+    />
+    <div class="error-message">
+      <i class="fas fa-info-circle"></i>
+      <span>Please enter your password</span>
+    </div>
+  </div>
+
+  <button type="submit" class="auth-submit-btn">Log In</button>
+</form>
+
+<div class="auth-switch">
+  <span>Don't have an account? </span>
+  <button class="auth-link" id="showSignup">Sign up here</button>
+</div>
