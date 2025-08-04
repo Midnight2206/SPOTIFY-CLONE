@@ -1,5 +1,5 @@
 import { store, subscribe } from "/store/store.js";
-
+import {DEPLOY_URL} from "/utils/constants.js";
 export default class AuthModal extends HTMLElement {
   constructor() {
     super();
@@ -10,7 +10,7 @@ export default class AuthModal extends HTMLElement {
     this.renderForm = this.renderForm.bind(this);
   }
   async connectedCallback() {
-    const res = await fetch("/components/authModal/authModal.html");
+    const res = await fetch(`${DEPLOY_URL}/components/authModal/authModal.html`);
     const html = await res.text();
     this.innerHTML = html;
     this.modal = this.querySelector("#authModal");

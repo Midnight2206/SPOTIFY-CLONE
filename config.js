@@ -1,0 +1,1 @@
+export const DEPLOY_URL =  location.hostname === "localhost" ? "" : "/SPOTIFY-CLONE";

@@ -1,4 +1,5 @@
 import { store, subscribe } from "/store/store.js";
+import {DEPLOY_URL} from "/utils/constants.js";
 export default class Header extends HTMLElement {
   constructor() {
     super();
@@ -8,7 +9,7 @@ export default class Header extends HTMLElement {
     this.showDropdown = this.showDropdown.bind(this);
   }
   async connectedCallback() {
-    const res = await fetch("/components/header/header.html");
+    const res = await fetch(`${DEPLOY_URL}/components/header/header.html`);
     const html = await res.text();
     this.innerHTML = html;
     this.headerTag = this.querySelector("header");
@@ -34,7 +35,7 @@ export default class Header extends HTMLElement {
   renderUser(user) {
     if (user) {
       this.headerTag.classList.add("logged-in");
-      this.avatarImg.src = user.avatar || "/placeholder.svg?height=32&width=32";
+      this.avatarImg.src = user.avatar || `${DEPLOY_URL}/placeholder.svg?height=32&width=32`;
       this.displayName.textContent = user.display_name || "User";
       document.addEventListener("click", this.showDropdown);
     } else {
