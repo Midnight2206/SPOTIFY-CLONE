@@ -1,1 +1,1 @@
-export const DEPLOY_URL =  location.hostname === "localhost" ? "" : "/SPOTIFY-CLONE";
+export const DEPLOY_URL =  location.hostname === "localhost" || location.hostname === "127.0.0.1" ? "" : "/SPOTIFY-CLONE";

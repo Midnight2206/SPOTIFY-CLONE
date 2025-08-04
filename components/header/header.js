@@ -1,5 +1,5 @@
-import { store, subscribe } from "/store/store.js";
-import {DEPLOY_URL} from "/utils/constants.js";
+import {DEPLOY_URL} from "../../config.js"
+import { store, subscribe } from "../../store/store.js";
 export default class Header extends HTMLElement {
   constructor() {
     super();
