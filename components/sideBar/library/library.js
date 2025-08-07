@@ -62,10 +62,12 @@ export default class Library extends HTMLElement {
   }
   changeViewMode(e) {
     const target = e.target.closest(".option-btn");
+    const viewModeIcon = target.querySelector("i")
     const viewMode = target.dataset.viewmode;
     if (viewMode) {
       this.viewMode = viewMode;
       this.setViewMode(viewMode);
+      this.sortBtnIcon.className = viewModeIcon.className
       this.closeMenu();
     }
   }
