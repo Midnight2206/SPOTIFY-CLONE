@@ -10,7 +10,7 @@ export class SignupForm extends HTMLElement {
   }
 
   async connectedCallback() {
-    const res = await fetch("/components/authModal/signupForm.html");
+    const res = await fetch("components/authModal/signupForm.html");
     const html = await res.text();
     this.innerHTML = html;
     this.classList.add("auth-form");
