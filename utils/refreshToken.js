@@ -23,12 +23,15 @@ export async function refreshToken() {
     }
     return false;
   }
-  function resetAuth() {
+}
+export function resetAuth() {
     localStorage.removeItem("token");
     localStorage.removeItem("refreshToken");
     store.user = null;
     store.stats = null;
+    store.userId = null;
     store.authModal_status = "close";
     store.authModal_form = "login";
+    store.myPlaylists = null;
+    store.viewModePlaylist = "list-default";
   }
-}

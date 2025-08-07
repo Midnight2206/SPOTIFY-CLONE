@@ -5,8 +5,6 @@ export function subscribe(key, callback) {
     listeners.set(key, new Set());
   }
   listeners.get(key).add(callback);
-  console.log(listeners);
-  
   // Trả về hàm unsubscribe để gỡ bỏ listener
   // Do mỗi hàm subccribe gắn với key và callback riêng nên trả unsubscribe trong này sẽ hiệu quả hơn
   return () => {
@@ -22,7 +20,9 @@ const state = {
   authModal_status: "close",
   authModal_form: "login",
   user: null,
-  stats: null
+  userId: null,
+  stats: null,
+  libraryData: [],
 };
 // Bọc state vào proxy để theo dõi sự thay đổi
 // Đối số đầu tiên của proxy là object lưu trữ các trạng thái ban đầu

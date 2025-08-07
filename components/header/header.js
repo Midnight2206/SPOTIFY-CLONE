@@ -1,4 +1,5 @@
 import { store, subscribe } from "../../store/store.js";
+import { resetAuth } from "../../utils/refreshToken.js"
 export default class Header extends HTMLElement {
   constructor() {
     super();
@@ -6,6 +7,7 @@ export default class Header extends HTMLElement {
     this.handleClickAuthBtns = this.handleClickAuthBtns.bind(this);
     this.renderUser = this.renderUser.bind(this);
     this.showDropdown = this.showDropdown.bind(this);
+    this.handleLogoutBtn = this.handleLogoutBtn.bind(this);
   }
   async connectedCallback() {
     const res = await fetch(`components/header/header.html`);
@@ -15,6 +17,7 @@ export default class Header extends HTMLElement {
     this.avatarImg = this.querySelector("#userAvatar img");
     this.displayName = this.querySelector(".user-displayname");
     this.userDropdown = this.querySelector("#userDropdown");
+    this.logoutBtn = this.userDropdown.querySelector("#logoutBtn");
     this.authbBtns = this.querySelector(".auth-buttons");
     this.authbBtns.addEventListener("click", this.handleClickAuthBtns);
     this.unsubUser = subscribe("user", (user) => this.renderUser(user));
@@ -44,12 +47,24 @@ export default class Header extends HTMLElement {
   }
   showDropdown(e) {
     if (e.target.closest("#userAvatar")) {
-      this.userDropdown.classList.toggle("show");
+      if (this.userDropdown.classList.contains("show")) {
+        this.userDropdown.classList.remove("show");
+        this.logoutBtn.removeEventListener("click", this.handleLogoutBtn);
+      } else {
+        this.userDropdown.classList.add("show");
+        this.logoutBtn.addEventListener("click", this.handleLogoutBtn);
+      }
     } else {
-      if(!e.target.closest(".user-menu")) {
+      if (!e.target.closest(".user-menu")) {
         this.userDropdown.classList.remove("show");
       }
     }
+  }
+  handleLogoutBtn() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    resetAuth()
+    this.userDropdown.classList.remove("show");
   }
 }
 customElements.define("spotify-header", Header);

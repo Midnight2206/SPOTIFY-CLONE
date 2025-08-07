@@ -1,59 +1,56 @@
 import httpRequest from "./utils/HttpRequest.js";
 import './components/index.js'
 import {getUser} from './utils/getUser.js'
+import { store, subscribe } from "./store/store.js";
+import NotifyToast from "./components/toast/NotifyToast.js";
 
 // Auth Modal Functionality
 document.addEventListener("DOMContentLoaded", async function () {
     // Get DOM elements
-    const authModal = document.getElementById("authModal");
-    const modalClose = document.getElementById("modalClose");
-    const signupForm = document.getElementById("signupForm");
-    const loginForm = document.getElementById("loginForm");
-    const showLoginBtn = document.getElementById("showLogin");
-    const showSignupBtn = document.getElementById("showSignup");
-    await getUser();
-    
+    if (localStorage.getItem("token")) {
+        await getUser();
+    } else {
+        store.user = null;
+        store.stats = null;
+        store.userId = null;
+    }
+    subscribe("userId",  async (userId) => getLibraryData(userId));
+    getLibraryData(store.userId);
 });
-
-// // User Menu Dropdown Functionality
-// document.addEventListener("DOMContentLoaded", function () {
-//     const userAvatar = document.getElementById("userAvatar");
-//     const userDropdown = document.getElementById("userDropdown");
-//     const logoutBtn = document.getElementById("logoutBtn");
-
-//     // Toggle dropdown when clicking avatar
-//     userAvatar.addEventListener("click", function (e) {
-//         e.stopPropagation();
-//         userDropdown.classList.toggle("show");
-//     });
-
-//     // Close dropdown when clicking outside
-//     document.addEventListener("click", function (e) {
-//         if (
-//             !userAvatar.contains(e.target) &&
-//             !userDropdown.contains(e.target)
-//         ) {
-//             userDropdown.classList.remove("show");
-//         }
-//     });
-
-//     // Close dropdown when pressing Escape
-//     document.addEventListener("keydown", function (e) {
-//         if (e.key === "Escape" && userDropdown.classList.contains("show")) {
-//             userDropdown.classList.remove("show");
-//         }
-//     });
-
-//     // Handle logout button click
-//     logoutBtn.addEventListener("click", function () {
-//         // Close dropdown first
-//         userDropdown.classList.remove("show");
-
-//         console.log("Logout clicked");
-//         // TODO: Students will implement logout logic here
-//     });
-// });
-
-// // Other functionality
-// document.addEventListener("DOMContentLoaded", async () => {
-// });
+async function getLibraryData(userId) {
+    store.libraryData = []
+        if (userId) {
+            try {
+                const resPlaylists = await httpRequest.get("me/playlists");
+                if (resPlaylists.status === 200) {
+                    const playlists = resPlaylists.playlists.map((playlist) => {
+                        playlist.type = "playlist";
+                        return playlist;
+                    });
+                    store.libraryData = [...playlists];
+                } else {
+                    NotifyToast.show({
+                        message: resPlaylists.message || "Failed to fetch playlists",
+                        type: "fail",
+                        duration: 3000,
+                    });
+                }
+                // const resArtists = await httpRequest.get("me/artists");
+                // console.log(resArtists);
+                // if (resArtists.status === 200) {
+                //     store.myArtists = resArtists.artists || [];
+                // } else {
+                //     NotifyToast.show({
+                //         message: resArtists.message || "Failed to fetch artists",
+                //         type: "fail",
+                //         duration: 3000,
+                //     });
+                // }
+            } catch (error) {
+                console.error("Error fetching playlists:", error);
+            }
+        } else {
+            store.authModal_status = "open";
+            store.authModal_form = "login";
+        }
+}

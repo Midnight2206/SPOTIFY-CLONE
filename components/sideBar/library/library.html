@@ -1,0 +1,55 @@
+<link rel="stylesheet" href="components/sideBar/library/library.css" />
+
+<div class="search-library">
+  <button class="search-library-btn">
+    <i class="fas fa-search"></i>
+  </button>
+  <div class="sort-container">
+    <button class="sort-btn">
+      <span>Added</span>
+      <i class="fas fa-list"></i>
+    </button>
+    <div class="sort-menu">
+      <span class="sort-menu-title">Sort by:</span>
+      <ul>
+        <li data-title="Added" data-sortmode="recentlyAdded" class="sort-item active">Recently added <i class="fa-solid fa-check"></i></li>
+        <li data-title="Recents" data-sortmode="recents" class="sort-item">Recents <i class="fa-solid fa-check"></i></li>
+        <li data-title="A-Z" data-sortmode="alphabetical" class="sort-item">Alphabetical <i class="fa-solid fa-check"></i></li>
+        <li data-title="Creator" data-sortmode="creator" class="sort-item">Creator <i class="fa-solid fa-check"></i></li>
+      </ul>
+      <div class="sort-menu-line"></div>
+      <span class="sort-menu-title">View as</span>
+      <div class="view-as-options">
+        <button
+          data-viewMode="list-default"
+          title="Default list"
+          class="option-btn"
+        >
+          <i class="fa-solid fa-list"></i>
+        </button>
+        <button
+          data-viewMode="list-compact"
+          title="Compact list"
+          class="option-btn"
+        >
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <button
+          data-viewMode="grid-default"
+          title="Default grid"
+          class="option-btn"
+        >
+          <i class="fa-solid fa-table-cells"></i>
+        </button>
+        <button
+          data-viewMode="grid-compact"
+          title="Compact grid"
+          class="option-btn"
+        >
+          <i class="fa-solid fa-border-all"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="library-container"></div>

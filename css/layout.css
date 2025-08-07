@@ -13,55 +13,6 @@
     background-color: var(--bg-primary);
 }
 
-/* Sidebar */
-.sidebar {
-    grid-area: sidebar;
-    background-color: var(--bg-secondary);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-lg);
-    overflow-y: auto;
-    z-index: var(--z-sidebar);
-}
-
-.sidebar-header {
-    margin-bottom: var(--spacing-xl);
-}
-
-.logo i {
-    font-size: 32px;
-    color: var(--text-primary);
-}
-
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-}
-
-.nav-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--spacing-md);
-}
-
-.nav-section .section-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-secondary);
-}
-
-.nav-tabs {
-    display: flex;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
-}
-
-.library-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
 
 /* Main Content */
 .main-content {

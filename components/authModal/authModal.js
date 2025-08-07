@@ -43,6 +43,8 @@ export default class AuthModal extends HTMLElement {
       this.modal.removeEventListener("click", this.clickOverlay);
       document.removeEventListener("keydown", this.pressESC);
       this.closeBtn.removeEventListener("click", this.close);
+      this.form?.reset();
+      this.form = null;
     }
   }
   close() {
