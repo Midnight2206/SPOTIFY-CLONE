@@ -3,17 +3,20 @@
 .app-container {
     display: grid;
     grid-template-areas:
+        "header header"
         "sidebar main"
         "player player";
-    grid-template-columns: 280px 1fr;
-    grid-template-rows: 1fr 72px;
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: 54px 1fr 72px;
     height: 100vh;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm);
     background-color: var(--bg-primary);
 }
 
-
+.header {
+    grid-area: header;
+}
 /* Main Content */
 .main-content {
     grid-area: main;

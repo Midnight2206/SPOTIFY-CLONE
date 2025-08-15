@@ -1,11 +1,30 @@
+import { addRoute, initRouter, navigate } from "./router.js";
 import httpRequest from "./utils/HttpRequest.js";
 import './components/index.js'
 import {getUser} from './utils/getUser.js'
 import { store, subscribe } from "./store/store.js";
 import NotifyToast from "./components/toast/NotifyToast.js";
-
+function renderToMain(...elements) {
+    const main = document.querySelector(".main-content");
+    main.innerHTML = "";
+    elements.forEach(el => main.appendChild(el));
+}
+function renderHome() {
+    renderToMain(
+        document.createElement("spotify-home")
+    );
+}
+function renderPlaylist({ params }) {
+    renderToMain(
+        Object.assign(document.createElement("spotify-playlist"), { playlistId: params.id })
+    );
+}
+addRoute("/", renderHome);
+addRoute("/playlist/:id", renderPlaylist);
+initRouter();
 // Auth Modal Functionality
 document.addEventListener("DOMContentLoaded", async function () {
+    
     // Get DOM elements
     if (localStorage.getItem("token")) {
         await getUser();
@@ -18,39 +37,37 @@ document.addEventListener("DOMContentLoaded", async function () {
     getLibraryData(store.userId);
 });
 async function getLibraryData(userId) {
-    store.libraryData = []
-        if (userId) {
-            try {
-                const resPlaylists = await httpRequest.get("me/playlists");
-                if (resPlaylists.status === 200) {
-                    const playlists = resPlaylists.playlists.map((playlist) => {
-                        playlist.type = "playlist";
-                        return playlist;
-                    });
-                    store.libraryData = [...playlists];
-                } else {
-                    NotifyToast.show({
-                        message: resPlaylists.message || "Failed to fetch playlists",
-                        type: "fail",
-                        duration: 3000,
-                    });
-                }
-                // const resArtists = await httpRequest.get("me/artists");
-                // console.log(resArtists);
-                // if (resArtists.status === 200) {
-                //     store.myArtists = resArtists.artists || [];
-                // } else {
-                //     NotifyToast.show({
-                //         message: resArtists.message || "Failed to fetch artists",
-                //         type: "fail",
-                //         duration: 3000,
-                //     });
-                // }
-            } catch (error) {
-                console.error("Error fetching playlists:", error);
-            }
+    store.libraryData = [];
+
+    if (!userId) {
+        store.authModal_status = "open";
+        store.authModal_form = "login";
+        return;
+    }
+
+    const requests = [
+        { name: "Followed playlists", key: "playlists", url: "me/playlists/followed" },
+        { name: "Your playlists", key: "playlists", url: "me/playlists" },
+        { name: "Followed artists", key: "artists", url: "me/artists" }
+    ];
+
+    const results = await Promise.allSettled(
+        requests.map(r => httpRequest.get(r.url))
+    );
+
+    results.forEach((res, i) => {
+        const { name, key } = requests[i];
+        console.log(res);
+        
+        if (res.status === "fulfilled" && res.value?.status === 200) {
+            const data = res.value?.[key]?.map(v => ({...v, type: key}))
+            if(data?.length) store.libraryData = [...store.libraryData, ...data]
         } else {
-            store.authModal_status = "open";
-            store.authModal_form = "login";
+            NotifyToast.show({
+                message: (res.value?.message) || `Failed to fetch ${name}`,
+                type: "fail",
+                duration: 3000
+            });
         }
+    });
 }

@@ -10,13 +10,20 @@ class HttpRequest {
         ...options,
         headers: {
           ...options.headers,
-          "Content-Type": "application/json",
         },
       };
       if (token && !options.skipAuth) {
         _options.headers["Authorization"] = `Bearer ${token}`;
       }
-      if (data) _options.body = JSON.stringify(data);
+      if (data) {
+        if(data instanceof FormData) {
+          _options.body = data;
+        } else {
+          _options.headers["Content-Type"] =
+          "application/json";
+        _options.body = JSON.stringify(data);
+        }
+      }
       const res = await fetch(`${this.baseURL}${path}`, _options);
       const response = await res.json();
       if (!res.ok) {

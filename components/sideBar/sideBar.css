@@ -97,11 +97,64 @@
 /* Search library */
 .search-library {
     display: flex;
+    width: 100%;
     align-items: center;
     justify-content: space-between;
     margin-bottom: var(--spacing-md);
 }
-
+.search-container {
+    height: 32px;
+}
+.search-container.open {
+    border-radius: var(--spacing-xs);
+    background-color: var(--bg-tertiary);
+}
+.search-container .clear-search-input {
+    padding: 0 6px;
+    text-align: center;
+}
+.search-container .search-library-input:placeholder-shown + .clear-search-input {
+    opacity: 0;
+    visibility: hidden;
+}
+.search-container .clear-search-input:hover i {
+    color: var(--text-secondary);
+}
+.search-container .clear-search-input i {
+    font-size: 16px;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+.search-container.open ~ .sort-container button span {
+    visibility: hidden;
+    opacity: 0;
+    width: 0;
+}
+.sort-container button span {
+    transition: visibility 0.2s ease, opacity 0.2s ease, width 0.2s ease;
+}
+.search-container .search-library-input {
+    opacity: 0;
+    visibility: hidden;
+    display: block;
+    width: 0;
+    margin: 0;
+    outline: none;
+    height: 100%;
+    padding: var(--spacing-xs);
+    border: none;
+    background-color: transparent;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    transition: visibility 0.2s ease, opacity 0.2s ease, width 0.2s ease;
+}
+.search-container.open .search-library-input {
+    opacity: 1;
+    visibility: visible;
+    width: auto;
+}
 .search-library-btn {
     width: 32px;
     height: 32px;

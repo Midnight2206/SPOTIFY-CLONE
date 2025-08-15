@@ -142,12 +142,15 @@
     align-items: center;
 }
 .item-title {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .item-subtitle {
   width: 100%;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -229,7 +232,7 @@
     flex: 0.5;
 }
 /* ================================
-      VIEWMODE: GRID DEFAULT
+    VIEWMODE: GRID DEFAULT
 ================================ */
 .library-container[data-viewmode="grid-default"] {
   display: grid;
@@ -315,10 +318,10 @@
   opacity: 1;
   visibility: visible;
 }
-.library-item[data-typeitem="playlist"] .item-image img {
+.library-item[data-typeitem="playlists"] .item-image img {
   border-radius: 4px;
 }
 
-.library-item[data-typeitem="artist"] .item-image img {
+.library-item[data-typeitem="artists"] .item-image img {
   border-radius: 50%;
 }
