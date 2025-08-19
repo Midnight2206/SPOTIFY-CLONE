@@ -218,8 +218,6 @@ export default class Library extends HTMLElement {
         }
       </div>
     `;
-
-      // Gán ảnh an toàn bằng preloadImage
       const imgEl = itemElement.querySelector("img");
       preloadImage(
         item.image_url || "placeholder.svg",
@@ -233,6 +231,7 @@ export default class Library extends HTMLElement {
   handleClickItem(e) {
     const target = e.target.closest(".library-item");
     if (target) {
+      localStorage.setItem("playlistScrollY", 0)
       const id = target.dataset.id;
       navigate(`/playlist/${id}`);
     }

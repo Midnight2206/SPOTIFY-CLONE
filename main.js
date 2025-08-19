@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     subscribe("userId",  async (userId) => getLibraryData(userId));
     getLibraryData(store.userId);
+    store.tracks = await getAllTracks()
 });
 async function getLibraryData(userId) {
     store.libraryData = [];
@@ -57,8 +58,6 @@ async function getLibraryData(userId) {
 
     results.forEach((res, i) => {
         const { name, key } = requests[i];
-        console.log(res);
-        
         if (res.status === "fulfilled" && res.value?.status === 200) {
             const data = res.value?.[key]?.map(v => ({...v, type: key}))
             if(data?.length) store.libraryData = [...store.libraryData, ...data]
@@ -70,4 +69,26 @@ async function getLibraryData(userId) {
             });
         }
     });
+}
+async function getAllTracks() {
+    try {
+        const res = await httpRequest.get("tracks", {skipAuth: true})
+        if(res.tracks && res.tracks.length > 0) {
+            return res.tracks
+        } else {
+            NotifyToast.show({
+                message: "There are currently no songs on the server.",
+                type: "info",
+                duration: 300
+            })
+        }
+    } catch (error) {
+        
+        NotifyToast.show({
+            message: error?.message || "Error while downloading song",
+            type: "fail",
+            duration: 3000
+        })
+        return []
+    }
 }

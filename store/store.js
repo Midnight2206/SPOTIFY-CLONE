@@ -23,6 +23,7 @@ const state = {
   userId: null,
   stats: null,
   libraryData: [],
+  tracks: []
 };
 // Bọc state vào proxy để theo dõi sự thay đổi
 // Đối số đầu tiên của proxy là object lưu trữ các trạng thái ban đầu
@@ -53,3 +54,16 @@ const proxy = new Proxy(state, {
   },
 });
 export const store = proxy
+export const staticStoreUI = {
+  playlist: {
+    visibleCols: {
+      status: true,
+      title: true,
+      album: true,
+      date: true,
+      duration: true,
+      menu: true,
+    },
+    viewModeTracksCompact: "false"
+  }
+}

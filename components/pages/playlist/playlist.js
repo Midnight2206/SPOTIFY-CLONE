@@ -1,10 +1,18 @@
 import httpRequest from "../../../utils/HttpRequest.js";
 import NotifyToast from "../../toast/NotifyToast.js";
-import { store } from "../../../store/store.js";
+import { store, subscribe, staticStoreUI } from "../../../store/store.js";
 import { navigate, reload } from "../../../router.js";
 export class Playlist extends HTMLElement {
   constructor() {
     super();
+    this.cols = {
+      status: "30px",
+      title: "4fr",
+      album: "2fr",
+      date: "1fr",
+      duration: "50px",
+      menu: "30px",
+    };
     this.toggleModal = this.toggleModal.bind(this);
     this.openModal = this.openModal.bind(this);
     this.closeModal = this.closeModal.bind(this);
@@ -13,6 +21,12 @@ export class Playlist extends HTMLElement {
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.handleChooseImg = this.handleChooseImg.bind(this);
     this.handleMenuAction = this.handleMenuAction.bind(this);
+    this.updateGrid = this.updateGrid.bind(this);
+    this.renderSuggestTracks = this.renderSuggestTracks.bind(this)
+    this.handleClickSuggestTracks = this.handleClickSuggestTracks.bind(this)
+    this.addTrackToPlaylist = this.addTrackToPlaylist.bind(this)
+    this.getTracksPlaylist = this.getTracksPlaylist.bind(this)
+    this.renderTracksPlaylist = this.renderTracksPlaylist.bind(this)
   }
   async connectedCallback() {
     this.playlist = await this.getPlaylistData();
@@ -29,9 +43,10 @@ export class Playlist extends HTMLElement {
             }</span>
             <h2 class="playlist-name">${this.playlist.name}</h2>
             <span class="playlist-detail">${this.playlist.description}</span>
-            <span class="playlist-detail">${this.playlist.user_display_name}, ${
-      this.playlist.total_tracks
-    } songs, ${this.playlist.total_duration}
+            <span class="playlist-detail">
+                ${this.playlist.user_display_name},
+                ${this.playlist.total_tracks} songs,
+                ${Math.trunc(this.playlist.total_duration / 60)}min ${this.playlist.total_duration % 60}sec
             </span>
           </div>
         </div>
@@ -54,10 +69,13 @@ export class Playlist extends HTMLElement {
             }</li>
           </ul>
         </div>
-        <div class="right-controls">
+        <h3 class="playlist-controls-name">${this.playlist.name}</h3>
+        <div data-compact=${staticStoreUI.playlist.viewModeTracksCompact} class="right-controls">
           <button class="controls-menu-btn">
-            <span>Compact</span>
-            <i class="fa-solid fa-bars"></i>
+            <span class="compact">Compact</span>
+            <span class="list">List</span>
+            <i class='fa-solid fa-bars compact'></i>
+            <i class='fa-solid fa-list list'></i>            
           </button>
           <ul class="controls-menu">
             <li class="controls-menu-item">
@@ -72,59 +90,21 @@ export class Playlist extends HTMLElement {
         </div>
       </section>
 
-      <!-- Popular Tracks -->
-      <section class="popular-section">
-        <h2 class="section-title">Popular</h2>
-        <div class="track-list">
-          <div class="track-item">
-            <div class="track-number">1</div>
-            <div class="track-image">
-              <img
-                src="placeholder.svg?height=40&width=40"
-                alt="Cho Tôi Lang Thang"
-              />
-            </div>
-            <div class="track-info">
-              <div class="track-name">Cho Tôi Lang Thang</div>
-            </div>
-            <div class="track-plays">27,498,341</div>
-            <div class="track-duration">4:18</div>
-            <button class="track-menu-btn">
-              <i class="fas fa-ellipsis-h"></i>
-            </button>
+      <section data-compact=${staticStoreUI.playlist.viewModeTracksCompact} class="playlist-tracks-section"></section>
+      <!-- Tracks of Playlist -->
+      <section class="suggest-tracks-section">
+        <div class="suggest-tracks-header">
+          <div>
+            <h2 class="suggest-tracks-title">Suggest tracks</h2>
+            <span class="suggest-tracks-decs">You may want to add to your playlist</span>
           </div>
-
-          <div class="track-item playing">
-            <div class="track-number">
-              <i class="fas fa-volume-up playing-icon"></i>
-            </div>
-            <div class="track-image">
-              <img src="placeholder.svg?height=40&width=40" alt="Lối Nhỏ" />
-            </div>
-            <div class="track-info">
-              <div class="track-name playing-text">Lối Nhỏ</div>
-            </div>
-            <div class="track-plays">45,686,866</div>
-            <div class="track-duration">4:12</div>
-            <button class="track-menu-btn">
-              <i class="fas fa-ellipsis-h"></i>
-            </button>
-          </div>
-
-          <div class="track-item">
-            <div class="track-number">3</div>
-            <div class="track-image">
-              <img src="placeholder.svg?height=40&width=40" alt="Cho Minh Em" />
-            </div>
-            <div class="track-info">
-              <div class="track-name">Cho Minh Em</div>
-            </div>
-            <div class="track-plays">20,039,024</div>
-            <div class="track-duration">3:26</div>
-            <button class="track-menu-btn">
-              <i class="fas fa-ellipsis-h"></i>
-            </button>
-          </div>
+          <button class="suggest-tracks-refresh">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            Refresh
+          </button>
+        </div>
+        <div class="suggest-tracks-list">
+          
         </div>
       </section>
       <div class="playlist-modal-overlay">
@@ -144,7 +124,7 @@ export class Playlist extends HTMLElement {
                 <span>choose photo</span>
               </div>
             </label>
-            <input type="text" name="name" value = "${
+            <input type="text" name="name" value="${
               this.playlist.name
             }" class="playlist-name-input" placeholder="Name of playlist" />
             <textarea name="description" class="playlist-des-input" placeholder="Description of playlist">${
@@ -164,16 +144,52 @@ export class Playlist extends HTMLElement {
     this.playlistModal = this.querySelector(".playlist-modal-overlay");
     this.playlistModalForm = this.querySelector(".playlist-modal-content");
     this.labelImg = this.querySelector(".choose-photo");
+    this.suggestTracksListEl = this.querySelector(".suggest-tracks-list")
+    this.sectionPlaylistTracks = this.querySelector(
+      "section.playlist-tracks-section"
+    );
+    const tracksPlaylist = await this.getTracksPlaylist()
+    this.renderTracksPlaylist(tracksPlaylist)
+    this.rightControls = this.querySelector(
+      ".playlist-controls .right-controls"
+    );
     const menuBtns = this.querySelectorAll(".controls-menu-btn");
-    menuBtns.forEach((btn) => {
-      btn.addEventListener("click", this.toggleMenu.bind(this));
-    });
-
     this.inputFile = this.playlistModalForm.querySelector(
       'input[name="image_file"]'
     );
-    this.inputFile.addEventListener("input", this.handleChooseImg);
     this.playlistHero = this.querySelector(".playlist-hero");
+    this.scrollTop = parseInt(localStorage.getItem("playlistScrollY"), 10)
+    this.updateGrid();
+    const hero = this.querySelector(".playlist-hero");
+    const controls = this.querySelector(".playlist-controls");
+    const main = this.closest(".main-content");
+    if (hero && controls && main) {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) {
+            controls.classList.add("sticky-active");
+          } else {
+            controls.classList.remove("sticky-active");
+          }
+        },
+        {
+          root: main, // scroll container
+          threshold: 0, // trigger ngay khi hero chạm top
+          rootMargin: "-16px 0px 0px 0px", // bù padding top
+        }
+      );
+
+      observer.observe(hero);
+    }
+
+    
+    this.suggestTracksListEl.addEventListener("click", this.handleClickSuggestTracks)
+    this.unsubTracks = subscribe("tracks", tracks => this.renderSuggestTracks(tracks))
+    this.renderSuggestTracks(store.tracks)
+    menuBtns.forEach((btn) => {
+      btn.addEventListener("click", this.toggleMenu.bind(this));
+    });
+    this.inputFile.addEventListener("input", this.handleChooseImg);
     this.playlistHero.addEventListener("click", this.toggleModal);
   }
   disconnectedCallback() {}
@@ -273,6 +289,8 @@ export class Playlist extends HTMLElement {
             duration: 3000,
           });
           this.closeModal();
+          localStorage.setItem("playlistScrollY", this.scrollTop)
+
           reload();
         }
       }
@@ -305,13 +323,13 @@ export class Playlist extends HTMLElement {
         const menuItem = event.target.closest(".controls-menu-item");
         if (menuItem) {
           const action = menuItem.textContent.trim();
-          if (action) this.handleMenuAction(action);
+          if (action) this.handleMenuAction(action, menuItem);
         }
       },
       { once: true }
     );
   }
-  async handleMenuAction(action) {
+  async handleMenuAction(action, menuItem) {
     switch (action) {
       case "Delete":
         try {
@@ -350,7 +368,7 @@ export class Playlist extends HTMLElement {
           const updatedPlaylist = res.playlist;
           store.libraryData = store.libraryData.map((item) => {
             if (item.id === updatedPlaylist.id) {
-              item.is_public = updatedPlaylist.is_public
+              item.is_public = updatedPlaylist.is_public;
               return item;
             } else {
               return item;
@@ -363,8 +381,8 @@ export class Playlist extends HTMLElement {
               duration: 3000,
             });
           }
-          reload()
-          
+          localStorage.setItem("playlistScrollY", this.scrollTop)
+          reload();
         } catch (error) {
           if (error.message) {
             NotifyToast.show({
@@ -375,7 +393,198 @@ export class Playlist extends HTMLElement {
           }
         }
         break;
+      case "List":
+        staticStoreUI.playlist.viewModeTracksCompact = "false"
+        this.sectionPlaylistTracks.dataset.compact = staticStoreUI.playlist.viewModeTracksCompact;
+        this.rightControls.dataset.compact = staticStoreUI.playlist.viewModeTracksCompact;
+        break;
+      case "Compact":
+        staticStoreUI.playlist.viewModeTracksCompact = "true"
+        this.sectionPlaylistTracks.dataset.compact = staticStoreUI.playlist.viewModeTracksCompact;
+        this.rightControls.dataset.compact = staticStoreUI.playlist.viewModeTracksCompact;
+        break;
+      case "Album":
+        menuItem.dataset.choosed =
+          menuItem.dataset.choosed === "true" ? "false" : "true";
+        staticStoreUI.playlist.visibleCols.album =
+          menuItem.dataset.choosed === "true" ? true : false;
+        this.updateGrid();
+        break;
+      case "Date Added":
+        menuItem.dataset.choosed =
+          menuItem.dataset.choosed === "true" ? "false" : "true";
+        staticStoreUI.playlist.visibleCols.date =
+          menuItem.dataset.choosed === "true" ? true : false;
+        this.updateGrid();
+        break;
+      case "Duration":
+        menuItem.dataset.choosed =
+          menuItem.dataset.choosed === "true" ? "false" : "true";
+        staticStoreUI.playlist.visibleCols.duration =
+          menuItem.dataset.choosed === "true" ? true : false;
+        this.updateGrid();
+        break;
+      case "Remove from this playlist":
+        try {
+          const id = menuItem.dataset.trackid
+          const res = await httpRequest.remove(`playlists/${this.playlistId}/tracks/${id}`)
+          NotifyToast.show({message: res.message || "Removed from this playlist", type: "success", duration: 3000})
+          localStorage.setItem("playlistScrollY", this.scrollTop)
+          reload()
+        } catch (error) {
+          NotifyToast.show({message: error.message || "Have an error", type: "fail", duration: 3000})
+        }
+        break;
     }
+  }
+  renderTracksPlaylist(tracks) {
+    if(tracks.length == 0) return
+    const tracksPlaylistHTML = tracks.map((track, i) => (
+      `
+        <div class="track-grid track-row" data-playing="true">
+          <div class="track-status">
+            <span>${i+1}</span>
+            <i class="fa-solid fa-play"></i>
+          </div>
+          <div class="track-title">
+            <img
+              class="track-img" 
+              src="${track.track_image_url 
+                      ? `https://spotify.f8team.dev${track.track_image_url}` 
+                      : 'placeholder.svg'}" 
+              alt="" 
+            />
+            <div class="track-info">
+              <a class="track-name">${track.track_title}</a>
+              <div class="track-artists">
+                <a class="track-artist">${track.artist_name}</a>
+              </div>
+            </div>
+          </div>
+          <a class="track-album">${track.album_title}</a>
+          <div class="track-date-added">${new Date(track.added_at).toLocaleDateString("vi-VN")}</div>
+          <div class="track-duration"><span class="track-duration">
+            ${String(Math.floor(track.track_duration / 60)).padStart(2, "0")}:${String(track.track_duration % 60).padStart(2, "0")}
+          </span></div>
+          <div class="last-column right-controls">
+            <i class="fa-solid fa-ellipsis menu-icon controls-menu-btn"></i>
+            <ul class="controls-menu lg-menu">
+              <li class="controls-menu-item" data-trackid=${track.track_id}>Remove from this playlist</li>
+              <li class="controls-menu-item">Save to your Liked songs</li>
+            </ul>
+          </div>
+        </div>
+      `
+    )).join("")
+    this.sectionPlaylistTracks.innerHTML = `
+        <div class="tracks-pseudo-el"></div>
+        <div class="track-grid playlist-tracks-header">
+          <div class="tracks-header-item"><span>#</span></div>
+          <div class="tracks-header-item"><span>Title</span></div>
+          <div class="tracks-header-item"><span>Album</span></div>
+          <div class="tracks-header-item"><span>Date Added</span></div>
+          <div class="tracks-header-item">
+            <span><i class="fa-solid fa-clock"></i></span>
+          </div>
+          <div class="last-column right-controls">
+            <i class="fa-solid fa-caret-down menu-icon controls-menu-btn"></i>
+            <ul class="controls-menu lg-menu space-between-menu">
+              <li class="controls-menu-title">Columns</li>
+              <li class="controls-menu-item" data-choosed="${staticStoreUI.playlist.visibleCols.album}">
+                Album
+                <i class="fa-solid fa-check"></i>
+              </li>
+              <li class="controls-menu-item" data-choosed="${staticStoreUI.playlist.visibleCols.date}">
+                Date Added
+                <i class="fa-solid fa-check"></i>
+              </li>
+              <li class="controls-menu-item" data-choosed="${staticStoreUI.playlist.visibleCols.duration}">
+                Duration
+                <i class="fa-solid fa-check"></i>
+              </li>
+            </ul>
+          </div>
+        </div>
+        ${tracksPlaylistHTML}
+    `
+  }
+  renderSuggestTracks(tracks) {
+    if(tracks.length === 0) return
+    const suggestTracksListHTML = tracks.map(track => (
+      `
+        <div class="suggest-tracks-row track-row">
+            <div class="track-title">
+              <img class="track-img" src="${track.image_url || "placeholder.svg"}" alt="" />
+              <div class="track-info">
+                <a class="track-name">${track.title}</a>
+                <div class="track-artists">
+                  <a class="track-artist">${track.artist_name === "null" ? "Chưa xác định" : track.artist_name}</a>
+                </div>
+              </div>
+            </div>
+            <a class="track-album">${track.album_title === "null" || !track.album_title ? "Chưa xác định" : track.album_title}</a>
+            <button data-trackId=${track.id} class="suggest-tracks-add">Add</button>
+          </div>
+      `
+    )).join("")
+    this.suggestTracksListEl.innerHTML = suggestTracksListHTML
+  }
+  async getTracksPlaylist() {
+    if(!this.playlistId) return
+    try {
+      const res = await httpRequest.get(`playlists/${this.playlistId}/tracks`)
+      return res.tracks || ""
+    } catch (error) {
+      NotifyToast.show({
+          message: error?.message || "An error occurred while adding the song.",
+          type: "fail",
+          duration: 3000
+        })
+      return []
+    }
+  }
+  handleClickSuggestTracks(e) {
+    if(e.target.closest("button.suggest-tracks-add")) {
+      this.addTrackToPlaylist(e.target.closest("button.suggest-tracks-add"))
+      localStorage.setItem("playlistScrollY", this.scrollTop)
+      reload()
+      return
+    }
+
+  }
+  async addTrackToPlaylist(btn) {
+    if(!btn.dataset.trackid) return
+    try {
+      const payload = {
+        track_id: btn.dataset.trackid,
+        position: 0
+      }
+      const res = await httpRequest.post(`playlists/${this.playlistId}/tracks`, payload)
+      if(res.playlist_track) {
+        NotifyToast.show({
+          message: `${res.message}`,
+          type: "success",
+          duration: 3000
+        })
+      }
+    } catch (error) {
+      
+        NotifyToast.show({
+          message: error?.message || "An error occurred while adding the song.",
+          type: "fail",
+          duration: 3000
+        })
+      
+    }
+  }
+  updateGrid() {
+    const section = this.querySelector(".playlist-tracks-section");
+    const template = Object.keys(this.cols)
+      .map((key) => (staticStoreUI.playlist.visibleCols[key] ? this.cols[key] : "0fr"))
+      .join(" ");
+    section.querySelectorAll(".track-grid").forEach((grid) => {
+      grid.style.gridTemplateColumns = template;
+    });
   }
 }
 customElements.define("spotify-playlist", Playlist);
