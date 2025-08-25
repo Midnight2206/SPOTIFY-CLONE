@@ -90,7 +90,7 @@
 }
 .library-item[data-active="true"] {
   background-color: var(--bg-active);
-  
+  color: var(--accent-hover);
 }
 .library-item:hover {
   background-color: var(--bg-hover);

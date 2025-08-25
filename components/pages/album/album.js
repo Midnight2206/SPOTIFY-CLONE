@@ -28,7 +28,6 @@ export class Album extends HTMLElement {
 
   async connectedCallback() {
     try {
-      store.libraryItemIdActive = this.albumId
       // lấy dữ liệu artist
       this.album = await this.getAlbumData();
       // render giao diện
@@ -396,6 +395,8 @@ export class Album extends HTMLElement {
         store.currentIndex = 0;
         store.isPlaying = true;
         this.renderPlayingTracks(null, store.currentIndex)
+      store.libraryItemIdActive = this.albumId
+
       }
       renderPlayingTracks(oldIndex, newIndex) {
         const rows = document.querySelectorAll(".track-row");

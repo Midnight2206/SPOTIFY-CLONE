@@ -59,12 +59,7 @@ async function getLibraryData(userId) {
   if (!userId) return
 
   const requests = [
-    {
-      name: "Followed playlists",
-      key: "playlists",
-      url: "me/playlists/followed",
-      type: "playlist"
-    },
+    { name: "Followed playlists", key: "playlists", url: "me/playlists/followed", type: "playlist" },
     { name: "Your playlists", key: "playlists", url: "me/playlists", type: "playlist" },
     { name: "Followed artists", key: "artists", url: "me/following", type: "artist" },
     { name: "Liked Albums", key: "albums", url: "me/albums/liked", type: "album"}

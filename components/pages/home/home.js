@@ -8,7 +8,6 @@ export default class HomePage extends HTMLElement {
   }
 
   async connectedCallback() {
-    store.libraryItemIdActive = ""
     const res = await fetch("components/pages/home/home.html")
     this.innerHTML = await res.text()
     this.classList.add("content-wrapper")

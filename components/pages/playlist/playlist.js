@@ -30,11 +30,10 @@ export class Playlist extends HTMLElement {
     this.getTracksPlaylist = this.getTracksPlaylist.bind(this);
     this.renderTracksPlaylist = this.renderTracksPlaylist.bind(this);
     this.renderPlayingTracks = this.renderPlayingTracks.bind(this);
-    this.updateQueue = this.updateQueue.bind(this)
+    this.updateQueue = this.updateQueue.bind(this);
   }
   async connectedCallback() {
     this.playlist = await this.getPlaylistData();
-    store.libraryItemIdActive = this.playlistId
     const html = `
       <link rel="stylesheet" href="components/pages/playlist/playlist.css" />
       <section class="playlist-hero">
@@ -153,8 +152,10 @@ export class Playlist extends HTMLElement {
     this.innerHTML = html;
     this.classList.add("content-wrapper");
     this.tracksPlaylist = await this.getTracksPlaylist();
-    this.playlistControlPlayBtn = this.querySelector(".playlist-controls .left-controls .play-btn-large")
-    this.playlistControlPlayBtn.addEventListener("click", this.updateQueue)
+    this.playlistControlPlayBtn = this.querySelector(
+      ".playlist-controls .left-controls .play-btn-large"
+    );
+    this.playlistControlPlayBtn.addEventListener("click", this.updateQueue);
     this.playlistModal = this.querySelector(".playlist-modal-overlay");
     this.playlistModalForm = this.querySelector(".playlist-modal-content");
     this.labelImg = this.querySelector(".choose-photo");
@@ -213,13 +214,12 @@ export class Playlist extends HTMLElement {
     );
   }
   disconnectedCallback() {
-    store.libraryItemIdActive = ""
     // Hủy subscription
     this.unsubCurrentIndex?.();
     this.unsubOtherStates?.(); // nếu có thêm các subscribe khác trong component
 
     // Gỡ event listener nếu có
-    this.playlistControlPlayBtn.removeEventListener("click", this.updateQueue)
+    this.playlistControlPlayBtn.removeEventListener("click", this.updateQueue);
     this.sectionPlaylistTracks
       ?.querySelectorAll(".track-row")
       .forEach((row) => {
@@ -651,12 +651,12 @@ export class Playlist extends HTMLElement {
     });
   }
   updateQueue() {
-    if(!store.user) {
-        NotifyToast.show({message: "Please login to listen", type: "info"})
-        store.authModal_form = "login"
-        store.authModal_status = "open"
-        return
-      }
+    if (!store.user) {
+      NotifyToast.show({ message: "Please login to listen", type: "info" });
+      store.authModal_form = "login";
+      store.authModal_status = "open";
+      return;
+    }
     const queueData = this.tracksPlaylist.map((track) => ({
       audio_url: track.track_audio_url,
       image: `https://spotify.f8team.dev${track.track_image_url}`,
@@ -665,11 +665,12 @@ export class Playlist extends HTMLElement {
       duration: track.track_duration,
       id: track.id,
     }));
-    queueActions.clearQueue()
+    queueActions.clearQueue();
     queueActions.setQueue(queueData);
     store.currentIndex = 0;
     store.isPlaying = true;
     this.renderPlayingTracks(null, store.currentIndex);
+    store.libraryItemIdActive = this.playlistId;
   }
   renderPlayingTracks(oldIndex, newIndex) {
     const rows = document.querySelectorAll(".track-row");

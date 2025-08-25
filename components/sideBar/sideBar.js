@@ -1,4 +1,5 @@
 import { store } from "../../store/store.js";
+import { refreshLibrary } from "../../main.js";
 import httpRequest from "../../utils/HttpRequest.js";
 import NotifyToast from "../../components/toast/NotifyToast.js";
 
@@ -72,8 +73,7 @@ export class SideBar extends HTMLElement {
       });
 
       if (res.playlist) {
-        res.playlist.type = "playlist";
-        store.libraryData = [res.playlist, ...store.libraryData];
+        refreshLibrary()
       }
 
       NotifyToast.show({

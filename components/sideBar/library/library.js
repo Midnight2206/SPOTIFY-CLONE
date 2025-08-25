@@ -204,6 +204,7 @@ export default class Library extends HTMLElement {
       itemElement.classList.add("library-item");
       itemElement.dataset.typeitem = item.type;
       itemElement.dataset.id = item.id;
+      if(item.id === store.libraryItemIdActive) itemElement.dataset.active = "true"
       // Tạo markup
       itemElement.innerHTML = `
       <div class="item-image">
@@ -245,7 +246,7 @@ export default class Library extends HTMLElement {
   }
   activeItem(id) {
     this.querySelectorAll(".library-item").forEach(item => {
-      if(item.dataset.id === store.libraryItemIdActive) {
+      if(item.dataset.id === id) {
         item.dataset.active = "true"
       } else {
         item.dataset.active = "false"

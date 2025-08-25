@@ -31,7 +31,6 @@ export class Artist extends HTMLElement {
 
   async connectedCallback() {
     try {
-      store.libraryItemIdActive = this.artistId
       // lấy dữ liệu artist
       this.artist = await this.getArtistData();
       // lấy album
@@ -107,7 +106,6 @@ export class Artist extends HTMLElement {
   }
 
   disconnectedCallback() {
-    store.libraryItemIdActive = ""
     // Hủy subscribe store
     this.unsubArtistTrending?.();
     this.unsubPopularAlbums?.();
@@ -444,6 +442,7 @@ export class Artist extends HTMLElement {
       store.currentIndex = 0;
       store.isPlaying = true;
       this.renderPlayingTracks(null. store.currentIndex)
+      store.libraryItemIdActive = this.artistId
     }
     renderPlayingTracks(oldIndex, newIndex) {
       const rows = document.querySelectorAll(".track-row");
