@@ -1,33 +1,43 @@
 import NotifyToast from "../components/toast/NotifyToast.js";
 
-const imageCache = new Map(); 
+// Bộ nhớ đệm ảnh (cache theo URL)
+const imageCache = new Map();
+
+// Ảnh placeholder mặc định (154x154, bạn có thể đổi link này)
+const DEFAULT_PLACEHOLDER = "placeholder.svg";
+
 /**
- * Preload image with caching (load once only).
- * @param {string} url - Image URL
- * @param {HTMLImageElement} targetImg - Target <img> element
- * @param {string} [fallback] - Optional fallback image URL if load fails
- * @returns {Promise<string>} Resolves with final URL set to img
+ * Preload ảnh với cache và fallback khi lỗi
+ * @param {string} url - Link ảnh gốc
+ * @param {HTMLImageElement} targetImg - Thẻ <img> cần set src
+ * @param {string} [fallback] - Link ảnh fallback (nếu không truyền dùng mặc định)
+ * @returns {Promise<string>} - Trả về URL cuối cùng được set
  */
-export function preloadImage(url, targetImg, fallback) {
+export function preloadImage(url, targetImg, fallback = DEFAULT_PLACEHOLDER) {
   return new Promise((resolve, reject) => {
+    // Nếu không có URL => set fallback ngay
     if (!url) {
-      const finalSrc = fallback || "";
-      targetImg.src = finalSrc;
+      targetImg.src = fallback;
       NotifyToast.show({
-        message: "Tải ảnh thất bại",
+        message: "Không tìm thấy ảnh",
         type: "fail",
         duration: 3000
       });
       return reject(new Error("No URL provided"));
     }
 
+    // Nếu ảnh đã có trong cache
     if (imageCache.has(url)) {
       const { finalSrc, status } = imageCache.get(url);
       targetImg.src = finalSrc;
-      return status === "success" ? resolve(finalSrc) : reject(new Error(`Image previously failed: ${url}`));
+      return status === "success"
+        ? resolve(finalSrc)
+        : reject(new Error(`Image previously failed: ${url}`));
     }
 
+    // Load ảnh mới
     const tempImg = new Image();
+
     tempImg.onload = () => {
       imageCache.set(url, { status: "success", finalSrc: url });
       targetImg.src = url;
@@ -35,9 +45,8 @@ export function preloadImage(url, targetImg, fallback) {
     };
 
     tempImg.onerror = () => {
-      const finalSrc = fallback || "";
-      imageCache.set(url, { status: "fail", finalSrc });
-      targetImg.src = finalSrc;
+      imageCache.set(url, { status: "fail", finalSrc: fallback });
+      targetImg.src = fallback;
       NotifyToast.show({
         message: "Tải ảnh thất bại",
         type: "fail",

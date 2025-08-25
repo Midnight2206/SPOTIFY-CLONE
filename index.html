@@ -1,38 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Đen - Spotify</title>
-        <base href="/SPOTIFY-CLONE/">
-        <!-- Font Awesome CDN -->
-        <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-        />
-        <link rel="stylesheet" href="css/reset.css" />
-        <link rel="stylesheet" href="css/variables.css" />
-        <link rel="stylesheet" href="css/components.css" />
-        <link rel="stylesheet" href="css/layout.css" />
-        <link rel="stylesheet" href="css/responsive.css" />
-    </head>
-    <body>
-        <div class="app-container">
-            <!-- Left Sidebar -->
-            <side-bar></side-bar>
-            <spotify-header></spotify-header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <title>Đen - Spotify</title>
+    <!-- <base href="/SPOTIFY-CLONE/" /> -->
+    <!-- Font Awesome CDN -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Left Sidebar -->
+      <side-bar></side-bar>
+      <spotify-header></spotify-header>
 
-            <!-- Main Content -->
-            <main class="main-content">
-            </main>
+      <!-- Main Content -->
+      <main class="main-content"></main>
 
-            <!-- Bottom Player -->
-            <spotify-footer></spotify-footer>
-        </div>
+      <!-- Bottom Player -->
+      <spotify-footer></spotify-footer>
+    </div>
 
-        <!-- Auth Modal -->
-        <auth-modal></auth-modal>
-
-        <script src="main.js" type="module"></script>
-    </body>
+    <!-- Auth Modal -->
+    <auth-modal></auth-modal>
+    <script src="main.js" type="module"></script>
+  </body>
 </html>

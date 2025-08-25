@@ -23,7 +23,22 @@ const state = {
   userId: null,
   stats: null,
   libraryData: [],
-  tracks: []
+  libraryItemIdActive: "",
+  tracks: [],
+  trendingArtists: [],
+  popularAlbums: [],
+  popularTracks: [],
+  trendingTracks: [],
+  mediaQueue: [],
+  currentIndex: -1,
+  isPlaying: false,
+  isRandom: false,
+  repeatMode: "off",
+  volume: 0.5,
+  isMuted: false,
+  process: 0,
+  duration: 0,
+  currentTime: 0
 };
 // Bọc state vào proxy để theo dõi sự thay đổi
 // Đối số đầu tiên của proxy là object lưu trữ các trạng thái ban đầu
@@ -47,14 +62,15 @@ const proxy = new Proxy(state, {
         callbacks.forEach((cb) => cb(value, oldValue));
       }
       // Log để debug
-      console.log(`[store] ${String(key)}:`, oldValue, "→", value);
+      // console.log(`[store] ${String(key)}:`, oldValue, "→", value);
     }
     //Thông báo gán state thành công
     return true;
   },
 });
-export const store = proxy
+export const store = proxy;
 export const staticStoreUI = {
+  mediaPlayer: null,
   playlist: {
     visibleCols: {
       status: true,
@@ -64,6 +80,26 @@ export const staticStoreUI = {
       duration: true,
       menu: true,
     },
-    viewModeTracksCompact: "false"
-  }
-}
+    viewModeTracksCompact: "false",
+  },
+  artist: {
+    visibleCols: {
+      status: true,
+      title: true,
+      album: true,
+      listeners: true,
+      duration: true,
+      menu: true,
+    },
+    viewModeTracksCompact: "false",
+  },
+  album: {
+    visibleCols: {
+      status: true,
+      title: true,
+      duration: true,
+      menu: true,
+    },
+    viewModeTracksCompact: "false",
+  },
+};

@@ -1,12 +1,13 @@
+  <link rel="stylesheet" href="components/footer/footer.css">  
+  
   <div class="player-left">
     <img
-      src="placeholder.svg?height=56&width=56"
-      alt="Current track"
+      
       class="player-image"
     />
     <div class="player-info">
-      <div class="player-title">Yêu Một Người Sao Buồn Đến Thế</div>
-      <div class="player-artist">Noo Phước Thịnh</div>
+      <div class="player-title"></div>
+      <div class="player-artist"></div>
     </div>
     <button class="add-btn">
       <i class="fa-solid fa-plus"></i>
@@ -15,29 +16,30 @@
 
   <div class="player-center">
     <div class="player-controls">
-      <button class="control-btn active">
+      <button class="control-btn random-btn">
         <i class="fas fa-random"></i>
       </button>
-      <button class="control-btn">
+      
+      <button class="control-btn backward-btn">
         <i class="fas fa-step-backward"></i>
       </button>
-      <button class="control-btn play-btn">
-        <i class="fas fa-pause"></i>
-      </button>
-      <button class="control-btn">
+      <button class="control-btn control-toggle-play"></button>
+      <button class="control-btn forward-btn">
         <i class="fas fa-step-forward"></i>
       </button>
-      <button class="control-btn">
+      
+      <button class="control-btn redo-btn">
         <i class="fas fa-redo"></i>
+      </button>
+      <button class="control-btn repeat-btn">
+        <i class="fa-solid fa-repeat"></i>
+        <i class="one-icon">1</i>
       </button>
     </div>
     <div class="progress-container">
-      <span class="time">0:52</span>
-      <div class="progress-bar">
-        <div class="progress-fill" style="width: 20%"></div>
-        <div class="progress-handle"></div>
-      </div>
-      <span class="time">4:59</span>
+      <span class="time progress-current-time"></span>
+      <input class="progress-bar" type="range">
+      <span class="time progress-duration"></span>
     </div>
   </div>
 
@@ -46,13 +48,9 @@
       <i class="fas fa-microphone"></i>
     </button>
     <div class="volume-container">
-      <button class="control-btn">
-        <i class="fas fa-volume-down"></i>
+      <button class="control-btn volume-btn">
       </button>
-      <div class="volume-bar">
-        <div class="volume-fill" style="width: 70%"></div>
-        <div class="volume-handle"></div>
-      </div>
+      <input type="range" class="volume-bar">
     </div>
     <button class="control-btn">
       <i class="fas fa-expand"></i>

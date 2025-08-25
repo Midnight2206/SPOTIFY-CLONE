@@ -20,6 +20,7 @@ export default class Library extends HTMLElement {
     this.handleClickItem = this.handleClickItem.bind(this);
     this.openSearchInput = this.openSearchInput.bind(this);
     this.closeSearchInput = this.closeSearchInput.bind(this);
+    this.activeItem = this.activeItem.bind(this)
   }
 
   async connectedCallback() {
@@ -52,14 +53,17 @@ export default class Library extends HTMLElement {
       }
       this.renderLibrary();
     });
+    this.unsubActive = subscribe("libraryItemIdActive", (id) => this.activeItem(id))
     this.renderLibrary();
     this.sideBar.addEventListener("click", this.toggleSearchInput);
     document.addEventListener("click", this.toggleSortMenu);
     document.addEventListener("click", this.handleClickItem);
+    this.activeItem(store.libraryItemIdActive)
   }
   disconnectedCallback() {
     document.removeEventListener("click", this.toggleSortMenu);
     this.unsubLibraryData();
+    this.unsubActive?.()
   }
   setViewMode(viewMode) {
     this.libraryContainer.dataset.viewmode = viewMode;
@@ -203,24 +207,24 @@ export default class Library extends HTMLElement {
       // Tạo markup
       itemElement.innerHTML = `
       <div class="item-image">
-        <img alt="${item.name}" />
+        <img alt="${item.name || item.title}" />
         <div class="item-playBtn">
           <i class="fas fa-play"></i>
         </div>
       </div>
       <div class="item-info">
-        <div class="item-title">${item.name}</div>
+        <div class="item-title">${item.name || item.title}</div>
         <div class="item-subtitle item-dot">•</div>
         ${
-          item.type === "playlists"
+          item.type === "playlist"
             ? `<div class="item-subtitle">Playlist • ${item.user_display_name}</div>`
-            : `<div class="item-subtitle">Artist</div>`
+            : `${item.type === "artist"? `<div class="item-subtitle">Artist</div>` : `<div class="item-subtitle">Album</div>`}`
         }
       </div>
     `;
       const imgEl = itemElement.querySelector("img");
       preloadImage(
-        item.image_url || "placeholder.svg",
+        item.image_url || item.cover_image_url || "placeholder.svg",
         imgEl,
         "placeholder.svg"
       );
@@ -233,8 +237,20 @@ export default class Library extends HTMLElement {
     if (target) {
       localStorage.setItem("playlistScrollY", 0)
       const id = target.dataset.id;
-      navigate(`/playlist/${id}`);
+      const type = target.dataset.typeitem
+      console.log(type);
+      
+      if(id && type) navigate(`/${type}/${id}`);
     }
+  }
+  activeItem(id) {
+    this.querySelectorAll(".library-item").forEach(item => {
+      if(item.dataset.id === store.libraryItemIdActive) {
+        item.dataset.active = "true"
+      } else {
+        item.dataset.active = "false"
+      }
+    })
   }
 }
 customElements.define("spotify-library", Library);

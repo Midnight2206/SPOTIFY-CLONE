@@ -42,7 +42,7 @@ export function initRouter() {
         }
         console.warn("No route matched:", path);
     }
-
+    handleRoute()
     window.addEventListener("hashchange", handleRoute);
     window.addEventListener("load", handleRoute);
 }

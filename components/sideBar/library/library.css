@@ -88,13 +88,12 @@
   border-radius: 4px;
   transition: background-color 0.2s ease;
 }
-
+.library-item[data-active="true"] {
+  background-color: var(--bg-active);
+  
+}
 .library-item:hover {
   background-color: var(--bg-hover);
-}
-
-.library-item.active {
-  background-color: var(--bg-active);
 }
 
 /* ==== IMAGE ==== */
@@ -318,10 +317,10 @@
   opacity: 1;
   visibility: visible;
 }
-.library-item[data-typeitem="playlists"] .item-image img {
+.library-item[data-typeitem="playlist"] .item-image img {
   border-radius: 4px;
 }
 
-.library-item[data-typeitem="artists"] .item-image img {
+.library-item[data-typeitem="artist"] .item-image img {
   border-radius: 50%;
 }

@@ -1,0 +1,98 @@
+.player-center {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.progress-container {
+    height: 12px;
+    display: flex;
+    align-items: center;
+}
+/* Progress bars */
+.progress-bar,
+.volume-bar {
+    position: relative;
+    height: 4px;
+    background-color: var(--bg-tertiary);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.progress-bar:hover,
+.volume-bar:hover {
+    height: 6px;
+}
+
+.progress-fill,
+.volume-fill {
+    height: 100%;
+    background-color: var(--text-primary);
+    border-radius: 2px;
+    position: relative;
+    transition: all var(--transition-fast);
+}
+
+.progress-handle,
+.volume-handle {
+    position: absolute;
+    right: -6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    background-color: var(--text-primary);
+    border-radius: var(--radius-full);
+    opacity: 0;
+    transition: all var(--transition-fast);
+}
+
+.progress-bar:hover .progress-handle,
+.volume-bar:hover .volume-handle {
+    opacity: 1;
+}
+
+/* Add button */
+.add-btn {
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid currentColor;
+    border-radius: var(--radius-full);
+    background-color: transparent;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.add-btn:hover {
+    color: var(--text-primary);
+    transform: scale(1.04);
+}
+
+.add-btn i {
+    font-size: 10px;
+}
+
+.control-btn {
+    width: 32px;
+    height: 32px;
+}
+.control-btn i {
+    color: var(--text-secondary);
+}
+.control-btn.active i {
+    color: var(--accent-primary);
+}
+.control-btn.active:hover i {
+    color: var(--accent-active);
+}
+.control-btn:hover i {
+    color: var(--text-primary);
+    transform: scale(1.1);
+}
+.control-toggle-play {
+    border-radius: 50%;
+    background-color: var(--bg-active);
+}

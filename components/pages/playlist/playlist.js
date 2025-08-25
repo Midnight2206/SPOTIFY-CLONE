@@ -2,6 +2,8 @@ import httpRequest from "../../../utils/HttpRequest.js";
 import NotifyToast from "../../toast/NotifyToast.js";
 import { store, subscribe, staticStoreUI } from "../../../store/store.js";
 import { navigate, reload } from "../../../router.js";
+import { refreshLibrary } from "../../../main.js";
+import { queueActions } from "../../../store/queueActions.js";
 export class Playlist extends HTMLElement {
   constructor() {
     super();
@@ -22,14 +24,17 @@ export class Playlist extends HTMLElement {
     this.handleChooseImg = this.handleChooseImg.bind(this);
     this.handleMenuAction = this.handleMenuAction.bind(this);
     this.updateGrid = this.updateGrid.bind(this);
-    this.renderSuggestTracks = this.renderSuggestTracks.bind(this)
-    this.handleClickSuggestTracks = this.handleClickSuggestTracks.bind(this)
-    this.addTrackToPlaylist = this.addTrackToPlaylist.bind(this)
-    this.getTracksPlaylist = this.getTracksPlaylist.bind(this)
-    this.renderTracksPlaylist = this.renderTracksPlaylist.bind(this)
+    this.renderSuggestTracks = this.renderSuggestTracks.bind(this);
+    this.handleClickSuggestTracks = this.handleClickSuggestTracks.bind(this);
+    this.addTrackToPlaylist = this.addTrackToPlaylist.bind(this);
+    this.getTracksPlaylist = this.getTracksPlaylist.bind(this);
+    this.renderTracksPlaylist = this.renderTracksPlaylist.bind(this);
+    this.renderPlayingTracks = this.renderPlayingTracks.bind(this);
+    this.updateQueue = this.updateQueue.bind(this)
   }
   async connectedCallback() {
     this.playlist = await this.getPlaylistData();
+    store.libraryItemIdActive = this.playlistId
     const html = `
       <link rel="stylesheet" href="components/pages/playlist/playlist.css" />
       <section class="playlist-hero">
@@ -46,7 +51,9 @@ export class Playlist extends HTMLElement {
             <span class="playlist-detail">
                 ${this.playlist.user_display_name},
                 ${this.playlist.total_tracks} songs,
-                ${Math.trunc(this.playlist.total_duration / 60)}min ${this.playlist.total_duration % 60}sec
+                ${Math.trunc(this.playlist.total_duration / 60)}min ${
+      this.playlist.total_duration % 60
+    }sec
             </span>
           </div>
         </div>
@@ -70,7 +77,9 @@ export class Playlist extends HTMLElement {
           </ul>
         </div>
         <h3 class="playlist-controls-name">${this.playlist.name}</h3>
-        <div data-compact=${staticStoreUI.playlist.viewModeTracksCompact} class="right-controls">
+        <div data-compact=${
+          staticStoreUI.playlist.viewModeTracksCompact
+        } class="right-controls">
           <button class="controls-menu-btn">
             <span class="compact">Compact</span>
             <span class="list">List</span>
@@ -90,7 +99,9 @@ export class Playlist extends HTMLElement {
         </div>
       </section>
 
-      <section data-compact=${staticStoreUI.playlist.viewModeTracksCompact} class="playlist-tracks-section"></section>
+      <section data-compact=${
+        staticStoreUI.playlist.viewModeTracksCompact
+      } class="playlist-tracks-section"></section>
       <!-- Tracks of Playlist -->
       <section class="suggest-tracks-section">
         <div class="suggest-tracks-header">
@@ -141,15 +152,17 @@ export class Playlist extends HTMLElement {
     `;
     this.innerHTML = html;
     this.classList.add("content-wrapper");
+    this.tracksPlaylist = await this.getTracksPlaylist();
+    this.playlistControlPlayBtn = this.querySelector(".playlist-controls .left-controls .play-btn-large")
+    this.playlistControlPlayBtn.addEventListener("click", this.updateQueue)
     this.playlistModal = this.querySelector(".playlist-modal-overlay");
     this.playlistModalForm = this.querySelector(".playlist-modal-content");
     this.labelImg = this.querySelector(".choose-photo");
-    this.suggestTracksListEl = this.querySelector(".suggest-tracks-list")
+    this.suggestTracksListEl = this.querySelector(".suggest-tracks-list");
     this.sectionPlaylistTracks = this.querySelector(
       "section.playlist-tracks-section"
     );
-    const tracksPlaylist = await this.getTracksPlaylist()
-    this.renderTracksPlaylist(tracksPlaylist)
+    this.renderTracksPlaylist(this.tracksPlaylist);
     this.rightControls = this.querySelector(
       ".playlist-controls .right-controls"
     );
@@ -158,7 +171,7 @@ export class Playlist extends HTMLElement {
       'input[name="image_file"]'
     );
     this.playlistHero = this.querySelector(".playlist-hero");
-    this.scrollTop = parseInt(localStorage.getItem("playlistScrollY"), 10)
+    this.scrollTop = parseInt(localStorage.getItem("playlistScrollY"), 10);
     this.updateGrid();
     const hero = this.querySelector(".playlist-hero");
     const controls = this.querySelector(".playlist-controls");
@@ -182,17 +195,40 @@ export class Playlist extends HTMLElement {
       observer.observe(hero);
     }
 
-    
-    this.suggestTracksListEl.addEventListener("click", this.handleClickSuggestTracks)
-    this.unsubTracks = subscribe("tracks", tracks => this.renderSuggestTracks(tracks))
-    this.renderSuggestTracks(store.tracks)
+    this.suggestTracksListEl.addEventListener(
+      "click",
+      this.handleClickSuggestTracks
+    );
+    this.unsubTracks = subscribe("tracks", (tracks) =>
+      this.renderSuggestTracks(tracks)
+    );
+    this.renderSuggestTracks(store.tracks);
     menuBtns.forEach((btn) => {
       btn.addEventListener("click", this.toggleMenu.bind(this));
     });
     this.inputFile.addEventListener("input", this.handleChooseImg);
     this.playlistHero.addEventListener("click", this.toggleModal);
+    this.unsubCurrentIndex = subscribe("currentIndex", (newIndex, oldIndex) =>
+      this.renderPlayingTracks(oldIndex, newIndex)
+    );
   }
-  disconnectedCallback() {}
+  disconnectedCallback() {
+    store.libraryItemIdActive = ""
+    // Hủy subscription
+    this.unsubCurrentIndex?.();
+    this.unsubOtherStates?.(); // nếu có thêm các subscribe khác trong component
+
+    // Gỡ event listener nếu có
+    this.playlistControlPlayBtn.removeEventListener("click", this.updateQueue)
+    this.sectionPlaylistTracks
+      ?.querySelectorAll(".track-row")
+      .forEach((row) => {
+        row.removeEventListener("click", this.onRowClick);
+      });
+
+    // Xóa tham chiếu DOM để tránh memory leak
+    this.sectionPlaylistTracks = null;
+  }
   async getPlaylistData() {
     const res = await httpRequest.get(`playlists/${this.playlistId}`);
     return res;
@@ -205,6 +241,7 @@ export class Playlist extends HTMLElement {
     }
   }
   openModal() {
+    if (this.playlist.user_id !== store.userId) return;
     this.playlistModal.classList.add("show");
     this.playlistModal.addEventListener("click", this.handleCloseModal);
     this.playlistModalForm.addEventListener("submit", this.handleSubmitForm);
@@ -272,25 +309,7 @@ export class Playlist extends HTMLElement {
           payload
         );
         if (response.status === 200 && response.playlist) {
-          const updatedPlaylist = response.playlist;
-          store.libraryData = store.libraryData.map((item) => {
-            if (item.id === updatedPlaylist.id) {
-              item.name = updatedPlaylist.name;
-              item.image_url = updatedPlaylist.image_url;
-              item.description = updatedPlaylist.description;
-              return item;
-            } else {
-              return item;
-            }
-          });
-          NotifyToast.show({
-            message: "Update playlist successfully",
-            type: "success",
-            duration: 3000,
-          });
-          this.closeModal();
-          localStorage.setItem("playlistScrollY", this.scrollTop)
-
+          refreshLibrary();
           reload();
         }
       }
@@ -381,7 +400,7 @@ export class Playlist extends HTMLElement {
               duration: 3000,
             });
           }
-          localStorage.setItem("playlistScrollY", this.scrollTop)
+          localStorage.setItem("playlistScrollY", this.scrollTop);
           reload();
         } catch (error) {
           if (error.message) {
@@ -394,14 +413,18 @@ export class Playlist extends HTMLElement {
         }
         break;
       case "List":
-        staticStoreUI.playlist.viewModeTracksCompact = "false"
-        this.sectionPlaylistTracks.dataset.compact = staticStoreUI.playlist.viewModeTracksCompact;
-        this.rightControls.dataset.compact = staticStoreUI.playlist.viewModeTracksCompact;
+        staticStoreUI.playlist.viewModeTracksCompact = "false";
+        this.sectionPlaylistTracks.dataset.compact =
+          staticStoreUI.playlist.viewModeTracksCompact;
+        this.rightControls.dataset.compact =
+          staticStoreUI.playlist.viewModeTracksCompact;
         break;
       case "Compact":
-        staticStoreUI.playlist.viewModeTracksCompact = "true"
-        this.sectionPlaylistTracks.dataset.compact = staticStoreUI.playlist.viewModeTracksCompact;
-        this.rightControls.dataset.compact = staticStoreUI.playlist.viewModeTracksCompact;
+        staticStoreUI.playlist.viewModeTracksCompact = "true";
+        this.sectionPlaylistTracks.dataset.compact =
+          staticStoreUI.playlist.viewModeTracksCompact;
+        this.rightControls.dataset.compact =
+          staticStoreUI.playlist.viewModeTracksCompact;
         break;
       case "Album":
         menuItem.dataset.choosed =
@@ -426,56 +449,80 @@ export class Playlist extends HTMLElement {
         break;
       case "Remove from this playlist":
         try {
-          const id = menuItem.dataset.trackid
-          const res = await httpRequest.remove(`playlists/${this.playlistId}/tracks/${id}`)
-          NotifyToast.show({message: res.message || "Removed from this playlist", type: "success", duration: 3000})
-          localStorage.setItem("playlistScrollY", this.scrollTop)
-          reload()
+          const id = menuItem.dataset.trackid;
+          const res = await httpRequest.remove(
+            `playlists/${this.playlistId}/tracks/${id}`
+          );
+          NotifyToast.show({
+            message: res.message || "Removed from this playlist",
+            type: "success",
+            duration: 3000,
+          });
+          localStorage.setItem("playlistScrollY", this.scrollTop);
+          reload();
         } catch (error) {
-          NotifyToast.show({message: error.message || "Have an error", type: "fail", duration: 3000})
+          NotifyToast.show({
+            message: error.message || "Have an error",
+            type: "fail",
+            duration: 3000,
+          });
         }
         break;
     }
   }
   renderTracksPlaylist(tracks) {
-    if(tracks.length == 0) return
-    const tracksPlaylistHTML = tracks.map((track, i) => (
-      `
-        <div class="track-grid track-row" data-playing="true">
+    if (tracks.length == 0) return;
+    const tracksPlaylistHTML = tracks
+      .map(
+        (track, i) =>
+          `
+        <div class="track-grid track-row">
           <div class="track-status">
-            <span>${i+1}</span>
+            <span>${i + 1}</span>
             <i class="fa-solid fa-play"></i>
           </div>
           <div class="track-title">
             <img
               class="track-img" 
-              src="${track.track_image_url 
-                      ? `https://spotify.f8team.dev${track.track_image_url}` 
-                      : 'placeholder.svg'}" 
+              src="${
+                track.track_image_url
+                  ? `https://spotify.f8team.dev${track.track_image_url}`
+                  : "placeholder.svg"
+              }" 
               alt="" 
             />
             <div class="track-info">
               <a class="track-name">${track.track_title}</a>
               <div class="track-artists">
-                <a class="track-artist">${track.artist_name}</a>
+                <a href="#/artist/${track.artist_id}" class="track-artist">${
+            track.artist_name
+          }</a>
               </div>
             </div>
           </div>
           <a class="track-album">${track.album_title}</a>
-          <div class="track-date-added">${new Date(track.added_at).toLocaleDateString("vi-VN")}</div>
+          <div class="track-date-added">${new Date(
+            track.added_at
+          ).toLocaleDateString("vi-VN")}</div>
           <div class="track-duration"><span class="track-duration">
-            ${String(Math.floor(track.track_duration / 60)).padStart(2, "0")}:${String(track.track_duration % 60).padStart(2, "0")}
+            ${String(Math.floor(track.track_duration / 60)).padStart(
+              2,
+              "0"
+            )}:${String(track.track_duration % 60).padStart(2, "0")}
           </span></div>
           <div class="last-column right-controls">
             <i class="fa-solid fa-ellipsis menu-icon controls-menu-btn"></i>
             <ul class="controls-menu lg-menu">
-              <li class="controls-menu-item" data-trackid=${track.track_id}>Remove from this playlist</li>
+              <li class="controls-menu-item" data-trackid=${
+                track.track_id
+              }>Remove from this playlist</li>
               <li class="controls-menu-item">Save to your Liked songs</li>
             </ul>
           </div>
         </div>
       `
-    )).join("")
+      )
+      .join("");
     this.sectionPlaylistTracks.innerHTML = `
         <div class="tracks-pseudo-el"></div>
         <div class="track-grid playlist-tracks-header">
@@ -506,85 +553,132 @@ export class Playlist extends HTMLElement {
           </div>
         </div>
         ${tracksPlaylistHTML}
-    `
+    `;
   }
   renderSuggestTracks(tracks) {
-    if(tracks.length === 0) return
-    const suggestTracksListHTML = tracks.map(track => (
-      `
+    if (tracks.length === 0) return;
+    const suggestTracksListHTML = tracks
+      .map(
+        (track) =>
+          `
         <div class="suggest-tracks-row track-row">
             <div class="track-title">
-              <img class="track-img" src="${track.image_url || "placeholder.svg"}" alt="" />
+              <img class="track-img" src="${
+                track.image_url || "placeholder.svg"
+              }" alt="" />
               <div class="track-info">
                 <a class="track-name">${track.title}</a>
                 <div class="track-artists">
-                  <a class="track-artist">${track.artist_name === "null" ? "Chưa xác định" : track.artist_name}</a>
+                  <a class="track-artist">${
+                    track.artist_name === "null"
+                      ? "Chưa xác định"
+                      : track.artist_name
+                  }</a>
                 </div>
               </div>
             </div>
-            <a class="track-album">${track.album_title === "null" || !track.album_title ? "Chưa xác định" : track.album_title}</a>
-            <button data-trackId=${track.id} class="suggest-tracks-add">Add</button>
+            <a class="track-album">${
+              track.album_title === "null" || !track.album_title
+                ? "Chưa xác định"
+                : track.album_title
+            }</a>
+            <button data-trackId=${
+              track.id
+            } class="suggest-tracks-add">Add</button>
           </div>
       `
-    )).join("")
-    this.suggestTracksListEl.innerHTML = suggestTracksListHTML
+      )
+      .join("");
+    this.suggestTracksListEl.innerHTML = suggestTracksListHTML;
   }
   async getTracksPlaylist() {
-    if(!this.playlistId) return
+    if (!this.playlistId) return;
     try {
-      const res = await httpRequest.get(`playlists/${this.playlistId}/tracks`)
-      return res.tracks || ""
+      const res = await httpRequest.get(`playlists/${this.playlistId}/tracks`);
+      return res.tracks || [];
     } catch (error) {
       NotifyToast.show({
-          message: error?.message || "An error occurred while adding the song.",
-          type: "fail",
-          duration: 3000
-        })
-      return []
+        message: error?.message || "An error occurred while adding the song.",
+        type: "fail",
+        duration: 3000,
+      });
+      return [];
     }
   }
   handleClickSuggestTracks(e) {
-    if(e.target.closest("button.suggest-tracks-add")) {
-      this.addTrackToPlaylist(e.target.closest("button.suggest-tracks-add"))
-      localStorage.setItem("playlistScrollY", this.scrollTop)
-      reload()
-      return
+    if (e.target.closest("button.suggest-tracks-add")) {
+      this.addTrackToPlaylist(e.target.closest("button.suggest-tracks-add"));
+      localStorage.setItem("playlistScrollY", this.scrollTop);
+      reload();
+      return;
     }
-
   }
   async addTrackToPlaylist(btn) {
-    if(!btn.dataset.trackid) return
+    if (!btn.dataset.trackid) return;
     try {
       const payload = {
         track_id: btn.dataset.trackid,
-        position: 0
-      }
-      const res = await httpRequest.post(`playlists/${this.playlistId}/tracks`, payload)
-      if(res.playlist_track) {
+        position: 0,
+      };
+      const res = await httpRequest.post(
+        `playlists/${this.playlistId}/tracks`,
+        payload
+      );
+      if (res.playlist_track) {
         NotifyToast.show({
           message: `${res.message}`,
           type: "success",
-          duration: 3000
-        })
+          duration: 3000,
+        });
       }
     } catch (error) {
-      
-        NotifyToast.show({
-          message: error?.message || "An error occurred while adding the song.",
-          type: "fail",
-          duration: 3000
-        })
-      
+      NotifyToast.show({
+        message: error?.message || "An error occurred while adding the song.",
+        type: "fail",
+        duration: 3000,
+      });
     }
   }
   updateGrid() {
     const section = this.querySelector(".playlist-tracks-section");
     const template = Object.keys(this.cols)
-      .map((key) => (staticStoreUI.playlist.visibleCols[key] ? this.cols[key] : "0fr"))
+      .map((key) =>
+        staticStoreUI.playlist.visibleCols[key] ? this.cols[key] : "0fr"
+      )
       .join(" ");
     section.querySelectorAll(".track-grid").forEach((grid) => {
       grid.style.gridTemplateColumns = template;
     });
+  }
+  updateQueue() {
+    if(!store.user) {
+        NotifyToast.show({message: "Please login to listen", type: "info"})
+        store.authModal_form = "login"
+        store.authModal_status = "open"
+        return
+      }
+    const queueData = this.tracksPlaylist.map((track) => ({
+      audio_url: track.track_audio_url,
+      image: `https://spotify.f8team.dev${track.track_image_url}`,
+      name: track.track_title,
+      artist: track.artist_name,
+      duration: track.track_duration,
+      id: track.id,
+    }));
+    queueActions.clearQueue()
+    queueActions.setQueue(queueData);
+    store.currentIndex = 0;
+    store.isPlaying = true;
+    this.renderPlayingTracks(null, store.currentIndex);
+  }
+  renderPlayingTracks(oldIndex, newIndex) {
+    const rows = document.querySelectorAll(".track-row");
+    if (oldIndex != null && rows[oldIndex]) {
+      rows[oldIndex].removeAttribute("data-playing");
+    }
+    if (newIndex != null && rows[newIndex]) {
+      rows[newIndex].setAttribute("data-playing", "true");
+    }
   }
 }
 customElements.define("spotify-playlist", Playlist);
