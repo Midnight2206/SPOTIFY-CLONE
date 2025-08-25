@@ -1,5 +1,6 @@
-/* Component Styles */
-
+.body {
+    user-select: none;
+}
 /* Buttons */
 .btn {
     padding: var(--spacing-sm) var(--spacing-md);

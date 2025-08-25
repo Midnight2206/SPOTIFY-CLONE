@@ -170,6 +170,9 @@ async function getTrendingTracks () {
 }
 // Auth Modal Functionality
 document.addEventListener("DOMContentLoaded", async function () {
+  document.addEventListener("contextmenu", (e) => {
+    e.preventDefault()
+  })
   // Get DOM elements
   if (localStorage.getItem("token")) {
     await getUser();
