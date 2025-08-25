@@ -441,7 +441,7 @@ export class Artist extends HTMLElement {
       queueActions.setQueue(queueData);
       store.currentIndex = 0;
       store.isPlaying = true;
-      this.renderPlayingTracks(null. store.currentIndex)
+      this.renderPlayingTracks(null, store.currentIndex)
       store.libraryItemIdActive = this.artistId
     }
     renderPlayingTracks(oldIndex, newIndex) {
